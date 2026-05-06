@@ -3,36 +3,49 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
-# LOAD ENV
+from logging_middleware.logger import logger
+
+
+logger.info("Loading environment variables")
+
 load_dotenv()
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 
-# HEADERS
+
 headers = {
     "Authorization": f"Bearer {ACCESS_TOKEN}"
 }
 
-# API URL
+
 url = "http://20.207.122.201/evaluation-service/notifications"
 
-# FETCH DATA
+
+logger.info("Fetching notifications from API")
+
 response = requests.get(url, headers=headers)
+
+logger.info(f"Notifications API status code: {response.status_code}")
 
 print(response.status_code)
 print(response.text)
 
-# CHECK API STATUS
+
 if response.status_code != 200:
+
+    logger.error("Failed to fetch notifications API")
+
     print("ERROR FETCHING NOTIFICATIONS API")
+
     exit()
 
-# CONVERT TO JSON
+
+logger.info("Converting response to JSON")
+
 data = response.json()
 
 notifications = data["notifications"]
 
-# PRIORITY WEIGHTS
 priority_map = {
     "Placement": 3,
     "Result": 2,
@@ -41,8 +54,12 @@ priority_map = {
 
 priority_notifications = []
 
-# CALCULATE PRIORITY
+logger.info("Starting priority calculation")
+
+
 for notification in notifications:
+
+    logger.info(f"Processing notification ID: {notification['ID']}")
 
     notification_type = notification["Type"]
 
@@ -60,14 +77,18 @@ for notification in notifications:
 
     priority_notifications.append(notification)
 
-# SORT BY PRIORITY
+
+logger.info("Sorting notifications based on priority")
+
 priority_notifications.sort(
     key=lambda x: x["priorityScore"],
     reverse=True
 )
 
-# TOP 10
+
 top_notifications = priority_notifications[:10]
+
+logger.info("Displaying top 10 notifications")
 
 # OUTPUT
 print("\nTOP 10 PRIORITY NOTIFICATIONS\n")
@@ -83,3 +104,5 @@ for notification in top_notifications:
     print("Message:", notification["Message"])
 
     print("Timestamp:", notification["Timestamp"])
+
+logger.info("Priority inbox process completed successfully")

@@ -3,9 +3,7 @@ import os
 from dotenv import load_dotenv
 from logging_middleware.logger import logger
 
-# =========================
-# LOAD TOKEN
-# =========================
+logger.info("Loading environment variables")
 
 load_dotenv()
 
@@ -15,59 +13,59 @@ headers = {
     "Authorization": f"Bearer {ACCESS_TOKEN}"
 }
 
-# =========================
-# FETCH VEHICLE TASKS
-# =========================
-
 vehicle_url = "http://20.207.122.201/evaluation-service/vehicles"
 
+logger.info("Fetching vehicle tasks from API")
+
 vehicle_response = requests.get(vehicle_url, headers=headers)
+
+logger.info(f"Vehicle API status code: {vehicle_response.status_code}")
 
 print("Vehicle API Status:", vehicle_response.status_code)
 
 vehicle_data = vehicle_response.json()
 
 if "vehicles" not in vehicle_data:
+
+    logger.error("Failed to fetch vehicles data")
+
     print(vehicle_data)
+
     exit()
 
 vehicles = vehicle_data["vehicles"]
 
-# =========================
-# FETCH DEPOT DATA
-# =========================
-
 depot_url = "http://20.207.122.201/evaluation-service/depots"
 
+logger.info("Fetching depots data from API")
+
 depot_response = requests.get(depot_url, headers=headers)
+
+logger.info(f"Depot API status code: {depot_response.status_code}")
 
 print("Depot API Status:", depot_response.status_code)
 
 depot_data = depot_response.json()
 
 if "depots" not in depot_data:
+
+    logger.error("Failed to fetch depots data")
+
     print(depot_data)
+
     exit()
 
 depots = depot_data["depots"]
 
-# =========================
-# GET MECHANIC HOURS
-# =========================
-
 MAX_HOURS = depots[0]["MechanicHours"]
+
+logger.info(f"Mechanic hours available: {MAX_HOURS}")
 
 print(f"\nMechanic Hours Available: {MAX_HOURS}")
 
-# =========================
-# SORT TASKS BY IMPACT
-# =========================
-
 vehicles.sort(key=lambda x: x["Impact"], reverse=True)
 
-# =========================
-# SCHEDULER LOGIC
-# =========================
+logger.info("Sorting tasks based on impact")
 
 selected_tasks = []
 
@@ -91,10 +89,6 @@ for task in vehicles:
 
         logger.info(f"Selected Task {task['TaskID']}")
 
-# =========================
-# FINAL OUTPUT
-# =========================
-
 print("\nSelected Tasks:\n")
 
 for task in selected_tasks:
@@ -102,3 +96,5 @@ for task in selected_tasks:
 
 print(f"\nTotal Hours Used: {total_hours}")
 print(f"Total Impact Achieved: {total_impact}")
+
+logger.info("Vehicle scheduling completed successfully")
